@@ -12,6 +12,9 @@
 #include <QMessageBox>
 #include <QClipboard>
 
+//changes for encryption
+#include <QCryptographicHash> //adds cryptographic hashing
+
 QMap <QString,QPair<QString, QString>> passwords; //defining the key-value pair
 
 QMainWindow *mainWindow;
@@ -26,11 +29,19 @@ void addPassword();
 void copyPassword();
 void removePassword();
 
+//encryption
+bool verifyMasterPassword();
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     setupUI();
-    mainWindow -> show();
+
+
+    if(verifyMasterPassword()){
+        mainWindow -> show();
+    }
+
     return app.exec();
 }
 
@@ -114,3 +125,26 @@ void removePassword(){
         passwordTable -> removeRow(row);
     }
 }
+
+bool verifyMasterPassword(){
+    QString input = QInputDialog :: getText(nullptr, "Master Password", "Enter Master Password", QLineEdit :: Password);
+
+    if(input.isEmpty()) return false;
+
+    //hash method
+    QString storedHash = QCryptographicHash :: hash (
+        QString("12345").toUtf8(),
+        QCryptographicHash :: Sha256
+                             ).toHex();
+
+    //hash method
+    QString inputHash = QCryptographicHash :: hash (
+                             input.toUtf8(),
+                             QCryptographicHash :: Sha256
+                             ).toHex();
+
+    return inputHash == storedHash;
+
+}
+
+
